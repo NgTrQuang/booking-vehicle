@@ -146,11 +146,11 @@ Khi deploy, thay đổi URL tương ứng với server backend.
 
 | Role | Email | Password |
 |------|-------|----------|
-| Passenger | passenger1@hpkgo.com | 123456 |
-| Passenger | passenger2@hpkgo.com | 123456 |
-| Driver | driver1@hpkgo.com | 123456 |
-| Driver | driver2@hpkgo.com | 123456 |
-| Driver | driver3@hpkgo.com | 123456 |
+| Passenger | passenger1@test.com | 123456 |
+| Passenger | passenger2@test.com | 123456 |
+| Driver | driver1@test.com | 123456 |
+| Driver | driver2@test.com | 123456 |
+| Driver | driver3@test.com | 123456 |
 
 ## 🎮 Hướng dẫn Demo
 
