@@ -1,0 +1,30 @@
+{
+  "name": "hpk-go-backend",
+  "version": "2.0.0",
+  "description": "HPK GO - Backend API & WebSocket Server with Auth",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "migrate:up": "node migrations/20260211_001_init_hybrid_rbac_schema.js up",
+    "migrate:down": "node migrations/20260211_001_init_hybrid_rbac_schema.js down",
+    "seed:up": "node migrations/20260211_002_seed_sample_data.js up",
+    "seed:down": "node migrations/20260211_002_seed_sample_data.js down",
+    "db:setup": "npm run migrate:up && npm run seed:up",
+    "db:reset": "npm run migrate:down && npm run migrate:up && npm run seed:up"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "pg": "^8.11.3",
+    "redis": "^4.6.10",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "uuid": "^9.0.0",
+    "bcrypt": "^5.1.1",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

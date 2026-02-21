@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HPK GO - Tài xế</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/styles/driver.css" />
+</head>
+<body>
+  <div class="top-bar">
+    <span class="logo">🚗 HPK GO Driver</span>
+    <span class="driver-name" id="driverNameTop">Chưa đăng nhập</span>
+    <button class="btn-logout" id="btnLogout" onclick="window.__app.logout()" style="display:none">Đăng xuất</button>
+  </div>
+
+  <!-- AUTH SCREEN -->
+  <div id="authScreen" class="auth-screen">
+    <div class="auth-card">
+      <h2 style="text-align:center;color:#ff6600;margin-bottom:20px">🚗 HPK GO Driver</h2>
+
+      <div id="auth-login">
+        <h3 style="margin-bottom:12px">Đăng nhập Tài xế</h3>
+        <div class="auth-field">
+          <label>Email</label>
+          <input type="email" id="loginEmail" placeholder="email@example.com">
+        </div>
+        <div class="auth-field">
+          <label>Mật khẩu</label>
+          <input type="password" id="loginPassword" placeholder="••••••">
+        </div>
+        <div id="loginError" class="auth-error"></div>
+        <button class="btn btn-online" onclick="window.__app.login()">Đăng nhập</button>
+        <p class="auth-switch">Chưa có tài khoản? <a href="#" onclick="window.__app.showRegister()">Đăng ký</a></p>
+        <p class="auth-switch"><a href="/passenger.html">Tôi là khách hàng →</a></p>
+      </div>
+
+      <div id="auth-register" style="display:none">
+        <h3 style="margin-bottom:12px">Đăng ký Tài xế</h3>
+        <div class="auth-field">
+          <label>Họ tên</label>
+          <input type="text" id="regName" placeholder="Nguyễn Văn A">
+        </div>
+        <div class="auth-field">
+          <label>Email</label>
+          <input type="email" id="regEmail" placeholder="email@example.com">
+        </div>
+        <div class="auth-field">
+          <label>Mật khẩu</label>
+          <input type="password" id="regPassword" placeholder="Tối thiểu 6 ký tự">
+        </div>
+        <div class="auth-field">
+          <label>Loại xe</label>
+          <select id="regVehicleType" class="driver-select">
+            <option value="car">Ô tô</option>
+            <option value="motorbike">Xe máy</option>
+          </select>
+        </div>
+        <div class="auth-field">
+          <label>Biển số xe</label>
+          <input type="text" id="regPlateNumber" placeholder="59A-12345">
+        </div>
+        <div id="regError" class="auth-error"></div>
+        <button class="btn btn-online" onclick="window.__app.register()">Đăng ký</button>
+        <p class="auth-switch">Đã có tài khoản? <a href="#" onclick="window.__app.showLogin()">Đăng nhập</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAP SCREEN (hidden until logged in) -->
+  <div id="mapScreen" style="display:none">
+    <div id="map"></div>
+
+    <div class="panel" id="panel">
+      <div class="panel-handle"></div>
+
+      <!-- Step 0: placeholder for showStep compatibility -->
+      <div id="step-select" style="display:none"></div>
+
+      <!-- Step 1: Online/Offline toggle -->
+      <div id="step-dashboard" style="display:block">
+        <div class="status-indicator">
+          <div class="status-dot" id="statusDot"></div>
+          <span id="statusText">Offline</span>
+        </div>
+
+        <div class="location-sim">
+          💡 <strong>Mô phỏng vị trí:</strong> Nhấn vào bản đồ để đặt vị trí của bạn, hoặc dùng GPS thực.
+        </div>
+
+        <button class="btn" id="btnToggle" onclick="window.__app.toggleOnline()">Bắt đầu nhận chuyến</button>
+      </div>
+
+      <!-- Step 2: Trip request popup -->
+      <div id="step-request" style="display:none">
+        <div class="trip-request-card pulse-anim">
+          <h3>🔔 Chuyến mới!</h3>
+          <div class="detail" id="reqPickup">📍 Đón: --</div>
+          <div class="detail" id="reqDropoff">🏁 Đến: --</div>
+          <div class="detail" id="reqDistance">📏 --</div>
+          <div class="price" id="reqPrice">--</div>
+        </div>
+        <div class="countdown" id="countdown">15</div>
+        <div class="btn-row">
+          <button class="btn btn-accept" onclick="window.__app.acceptTrip()">✅ Nhận chuyến</button>
+          <button class="btn btn-reject" onclick="window.__app.rejectTrip()">❌ Từ chối</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Active trip -->
+      <div id="step-trip" style="display:none">
+        <div class="trip-info-card">
+          <div class="row">
+            <span class="label">Trạng thái</span>
+            <span class="value" id="tripStatus">--</span>
+          </div>
+          <div class="row">
+            <span class="label">Điểm đón</span>
+            <span class="value" id="tripPickup">--</span>
+          </div>
+          <div class="row">
+            <span class="label">Điểm đến</span>
+            <span class="value" id="tripDropoff">--</span>
+          </div>
+          <div class="row">
+            <span class="label">Giá</span>
+            <span class="value" id="tripPrice" style="color:#ff6600;font-size:18px">--</span>
+          </div>
+        </div>
+
+        <button class="btn btn-action" id="btnTripAction" onclick="window.__app.tripAction()">--</button>
+      </div>
+
+      <!-- Step 4: Trip finished -->
+      <div id="step-finished" style="display:none">
+        <div style="text-align:center;padding:20px">
+          <div style="font-size:48px">🏁</div>
+          <h3 style="margin-top:12px;color:#00b14f">Hoàn thành chuyến!</h3>
+          <div class="trip-info-card" style="margin-top:16px">
+            <div class="row">
+              <span class="label">Thu nhập</span>
+              <span class="value" id="earnedAmount" style="color:#00b14f;font-size:20px">--</span>
+            </div>
+          </div>
+          <button class="btn btn-online" onclick="window.__app.backToDashboard()" style="margin-top:12px">Tiếp tục nhận chuyến</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module" src="/src/driver.js"></script>
+</body>
+</html>

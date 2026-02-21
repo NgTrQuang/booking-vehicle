@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: hpkgo-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: booking_vehicle
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: hpkgo-redis
+    ports:
+      - "6379:6379"
+
+  # Optional: self-hosted OSRM
+  # osrm:
+  #   image: osrm/osrm-backend
+  #   container_name: hpkgo-osrm
+  #   ports:
+  #     - "5000:5000"
+  #   volumes:
+  #     - ./osrm-data:/data
+  #   command: osrm-routed --algorithm mld /data/vietnam-latest.osrm
+
+volumes:
+  pgdata:

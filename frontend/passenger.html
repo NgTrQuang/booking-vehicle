@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HPK GO - Đặt xe</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/styles/passenger.css" />
+</head>
+<body>
+  <div class="top-bar">
+    <span class="logo">🚖 HPK GO</span>
+    <span class="user-info" id="userInfo">Chưa đăng nhập</span>
+    <button class="btn-logout" id="btnLogout" onclick="window.__app.logout()" style="display:none">Đăng xuất</button>
+  </div>
+
+  <!-- AUTH SCREEN -->
+  <div id="authScreen" class="auth-screen">
+    <div class="auth-card">
+      <h2 style="text-align:center;color:#00b14f;margin-bottom:20px">🚖 HPK GO</h2>
+      
+      <div id="auth-login">
+        <h3 style="margin-bottom:12px">Đăng nhập Khách hàng</h3>
+        <div class="auth-field">
+          <label>Email</label>
+          <input type="email" id="loginEmail" placeholder="email@example.com">
+        </div>
+        <div class="auth-field">
+          <label>Mật khẩu</label>
+          <input type="password" id="loginPassword" placeholder="••••••">
+        </div>
+        <div id="loginError" class="auth-error"></div>
+        <button class="btn btn-primary" onclick="window.__app.login()">Đăng nhập</button>
+        <p class="auth-switch">Chưa có tài khoản? <a href="#" onclick="window.__app.showRegister()">Đăng ký</a></p>
+        <p class="auth-switch"><a href="/driver.html">Tôi là tài xế →</a></p>
+      </div>
+
+      <div id="auth-register" style="display:none">
+        <h3 style="margin-bottom:12px">Đăng ký Khách hàng</h3>
+        <div class="auth-field">
+          <label>Họ tên</label>
+          <input type="text" id="regName" placeholder="Nguyễn Văn A">
+        </div>
+        <div class="auth-field">
+          <label>Email</label>
+          <input type="email" id="regEmail" placeholder="email@example.com">
+        </div>
+        <div class="auth-field">
+          <label>Mật khẩu</label>
+          <input type="password" id="regPassword" placeholder="Tối thiểu 6 ký tự">
+        </div>
+        <div id="regError" class="auth-error"></div>
+        <button class="btn btn-primary" onclick="window.__app.register()">Đăng ký</button>
+        <p class="auth-switch">Đã có tài khoản? <a href="#" onclick="window.__app.showLogin()">Đăng nhập</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAP SCREEN (hidden until logged in) -->
+  <div id="mapScreen" style="display:none">
+    <div id="map"></div>
+
+    <button class="btn-gps" onclick="window.__app.getMyLocation()" title="Vị trí của tôi">📍</button>
+
+    <div class="panel" id="panel">
+      <div class="panel-handle"></div>
+
+      <!-- Step 1: Input pickup / dropoff -->
+      <div id="step-input" style="display:block">
+        <div class="panel-header">
+          <span class="logo">Bạn muốn đi đâu?</span>
+        </div>
+
+        <div class="input-group">
+          <label>📍 Điểm đón</label>
+          <div class="input-row">
+            <input type="text" id="pickupLat" placeholder="Lat" readonly>
+            <input type="text" id="pickupLng" placeholder="Lng" readonly>
+          </div>
+          <p class="hint">Nhấn vào bản đồ hoặc dùng GPS để chọn điểm đón</p>
+        </div>
+
+        <div class="input-group">
+          <label>🏁 Điểm đến</label>
+          <div class="input-row">
+            <input type="text" id="dropoffLat" placeholder="Lat" readonly>
+            <input type="text" id="dropoffLng" placeholder="Lng" readonly>
+          </div>
+          <p class="hint">Nhấn vào bản đồ để chọn điểm đến</p>
+        </div>
+
+        <div id="routeInfo" style="display:none" class="trip-info">
+          <div class="row">
+            <span class="label">Khoảng cách</span>
+            <span class="value" id="distanceText">--</span>
+          </div>
+          <div class="row">
+            <span class="label">Thời gian ước tính</span>
+            <span class="value" id="durationText">--</span>
+          </div>
+          <div class="row">
+            <span class="label">Giá ước tính</span>
+            <span class="value" id="priceText" style="color:#00b14f;font-size:18px">--</span>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="btnBook" onclick="window.__app.requestTrip()" disabled>Đặt xe ngay</button>
+        <button class="btn btn-secondary" onclick="window.__app.resetSelection()">Chọn lại</button>
+      </div>
+
+      <!-- Step 2: Searching for driver -->
+      <div id="step-searching" style="display:none">
+        <div style="text-align:center;padding:20px">
+          <div class="searching-anim" style="font-size:48px">🔍</div>
+          <h3 style="margin-top:12px">Đang tìm tài xế...</h3>
+          <p style="color:#888;font-size:13px;margin-top:8px" id="searchingText">Đang tìm tài xế gần bạn</p>
+          <button class="btn btn-danger" onclick="window.__app.cancelTrip()" style="margin-top:16px">Hủy đặt xe</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Driver accepted -->
+      <div id="step-tracking" style="display:none">
+        <div id="driverCard" class="driver-card">
+          <div class="name" id="driverName">--</div>
+          <div class="detail" id="driverPlate">🚗 --</div>
+          <div class="detail" id="driverVehicle">🏍️ --</div>
+        </div>
+        <div class="trip-info">
+          <div class="row">
+            <span class="label">Trạng thái</span>
+            <span id="tripStatusBadge" class="status-badge status-accepted">Tài xế đang đến</span>
+          </div>
+          <div class="row">
+            <span class="label">Khoảng cách</span>
+            <span class="value" id="trackDistance">--</span>
+          </div>
+          <div class="row">
+            <span class="label">Giá</span>
+            <span class="value" id="trackPrice" style="color:#00b14f">--</span>
+          </div>
+        </div>
+        <button class="btn btn-danger" id="btnCancelTracking" onclick="window.__app.cancelTrip()">Hủy chuyến</button>
+      </div>
+
+      <!-- Step 4: Trip finished -->
+      <div id="step-finished" style="display:none">
+        <div style="text-align:center;padding:20px">
+          <div style="font-size:48px">✅</div>
+          <h3 style="margin-top:12px;color:#00b14f">Hoàn thành chuyến đi!</h3>
+          <p style="color:#888;font-size:13px;margin-top:8px">Cảm ơn bạn đã sử dụng HPK GO</p>
+          <div class="trip-info" style="margin-top:16px">
+            <div class="row">
+              <span class="label">Tổng tiền</span>
+              <span class="value" id="finalPrice" style="color:#00b14f;font-size:20px">--</span>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="window.__app.resetAll()" style="margin-top:12px">Đặt xe mới</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module" src="/src/passenger.js"></script>
+</body>
+</html>
