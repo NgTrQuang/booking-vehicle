@@ -1,4 +1,4 @@
-# 🚖 HPK GO - Demo Booking Vehicle
+# 🚖Booking Vehicle
 
 Hệ thống demo gọi xe giống Grab/Uber sử dụng công nghệ miễn phí.
 **Frontend** và **Backend** được tách riêng hoàn toàn để dễ tích hợp và mở rộng.
